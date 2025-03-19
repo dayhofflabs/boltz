@@ -219,6 +219,23 @@ class BoltzWriter(BasePredictionWriter):
                     )
                     np.savez_compressed(path, pde=pde.cpu().numpy())
 
+                # Save embeddings if present
+                if "s_embeddings" in prediction:
+                    s_embeddings = prediction["s_embeddings"][model_idx] if prediction["s_embeddings"].dim() > 2 else prediction["s_embeddings"]
+                    path = (
+                        struct_dir
+                        / f"s_embeddings_{record.id}_model_{idx_to_rank[model_idx]}.npz"
+                    )
+                    np.savez_compressed(path, s_embeddings=s_embeddings.cpu().numpy())
+
+                if "z_embeddings" in prediction:
+                    z_embeddings = prediction["z_embeddings"][model_idx] if prediction["z_embeddings"].dim() > 3 else prediction["z_embeddings"]
+                    path = (
+                        struct_dir
+                        / f"z_embeddings_{record.id}_model_{idx_to_rank[model_idx]}.npz"
+                    )
+                    np.savez_compressed(path, z_embeddings=z_embeddings.cpu().numpy())
+
     def on_predict_epoch_end(
         self,
         trainer: Trainer,  # noqa: ARG002
