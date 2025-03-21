@@ -320,7 +320,7 @@ class Boltz1(LightningModule):
                     s, z = pairformer_module(s, z, mask=mask, pair_mask=pair_mask)
 
             pdistogram = self.distogram_module(z)
-            dict_out = {"pdistogram": pdistogram, "s_embeddings": s, "z_embeddings": z}
+            dict_out = {"pdistogram": pdistogram, "s_embeddings": s, "z_embeddings": z, "token_mask": mask, "pair_mask": pair_mask}
 
         # Compute structure module
         if self.training and self.structure_prediction_training:
@@ -1139,6 +1139,8 @@ class Boltz1(LightningModule):
             if self.predict_args.get("write_embeddings", False):
                 pred_dict["s_embeddings"] = out["s_embeddings"]
                 pred_dict["z_embeddings"] = out["z_embeddings"]
+                pred_dict["token_mask"] = out["token_mask"]
+                pred_dict["pair_mask"] = out["pair_mask"]
             if self.predict_args.get("write_confidence_summary", True):
                 pred_dict["confidence_score"] = (
                     4 * out["complex_plddt"]
