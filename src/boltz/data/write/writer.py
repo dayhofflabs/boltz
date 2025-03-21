@@ -239,6 +239,23 @@ class BoltzWriter(BasePredictionWriter):
                         / f"z_embeddings_{record.id}_model_{idx_to_rank[model_idx]}.npz"
                     )
                     np.savez_compressed(path, z_embeddings=z_embeddings.cpu().numpy())
+                
+                # Save masks if present
+                if "token_mask" in prediction:
+                    token_mask = prediction["token_mask"][model_idx] if prediction["token_mask"].dim() > 1 else prediction["token_mask"]
+                    path = (
+                        struct_dir
+                        / f"token_mask_{record.id}_model_{idx_to_rank[model_idx]}.npz"
+                    )
+                    np.savez_compressed(path, token_mask=token_mask.cpu().numpy())
+                
+                if "pair_mask" in prediction:
+                    pair_mask = prediction["pair_mask"][model_idx] if prediction["pair_mask"].dim() > 2 else prediction["pair_mask"]
+                    path = (
+                        struct_dir
+                        / f"pair_mask_{record.id}_model_{idx_to_rank[model_idx]}.npz"
+                    )
+                    np.savez_compressed(path, pair_mask=pair_mask.cpu().numpy())
 
     def on_predict_epoch_end(
         self,
