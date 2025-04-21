@@ -95,6 +95,32 @@ class BoltzWriter(BasePredictionWriter):
             # Remove masked chains completely
             structure = structure.remove_invalid_chains()
 
+            # --- Save embeddings and masks (once per record) ---
+            struct_dir = self.output_dir / record.id
+            struct_dir.mkdir(exist_ok=True)
+
+            if "s_embeddings" in prediction:
+                # Take the first element from the batch dimension (index 0)
+                s_embeddings = prediction["s_embeddings"][0] 
+                path = struct_dir / f"s_embeddings_{record.id}.npz"
+                np.savez_compressed(path, s_embeddings=s_embeddings.cpu().numpy())
+
+            if "z_embeddings" in prediction:
+                z_embeddings = prediction["z_embeddings"][0]
+                path = struct_dir / f"z_embeddings_{record.id}.npz"
+                np.savez_compressed(path, z_embeddings=z_embeddings.cpu().numpy())
+            
+            if "token_mask" in prediction:
+                token_mask = prediction["token_mask"][0]
+                path = struct_dir / f"token_mask_{record.id}.npz"
+                np.savez_compressed(path, token_mask=token_mask.cpu().numpy())
+            
+            if "pair_mask" in prediction:
+                pair_mask = prediction["pair_mask"][0]
+                path = struct_dir / f"pair_mask_{record.id}.npz"
+                np.savez_compressed(path, pair_mask=pair_mask.cpu().numpy())
+            # --- End of embeddings/masks saving ---
+
             for model_idx in range(coord.shape[0]):
                 # Get model coord
                 model_coord = coord[model_idx]
@@ -222,40 +248,6 @@ class BoltzWriter(BasePredictionWriter):
                         / f"pde_{record.id}_model_{idx_to_rank[model_idx]}.npz"
                     )
                     np.savez_compressed(path, pde=pde.cpu().numpy())
-
-                # Save embeddings if present
-                if "s_embeddings" in prediction:
-                    s_embeddings = prediction["s_embeddings"][model_idx] if prediction["s_embeddings"].dim() > 2 else prediction["s_embeddings"]
-                    path = (
-                        struct_dir
-                        / f"s_embeddings_{record.id}_model_{idx_to_rank[model_idx]}.npz"
-                    )
-                    np.savez_compressed(path, s_embeddings=s_embeddings.cpu().numpy())
-
-                if "z_embeddings" in prediction:
-                    z_embeddings = prediction["z_embeddings"][model_idx] if prediction["z_embeddings"].dim() > 3 else prediction["z_embeddings"]
-                    path = (
-                        struct_dir
-                        / f"z_embeddings_{record.id}_model_{idx_to_rank[model_idx]}.npz"
-                    )
-                    np.savez_compressed(path, z_embeddings=z_embeddings.cpu().numpy())
-                
-                # Save masks if present
-                if "token_mask" in prediction:
-                    token_mask = prediction["token_mask"][model_idx] if prediction["token_mask"].dim() > 1 else prediction["token_mask"]
-                    path = (
-                        struct_dir
-                        / f"token_mask_{record.id}_model_{idx_to_rank[model_idx]}.npz"
-                    )
-                    np.savez_compressed(path, token_mask=token_mask.cpu().numpy())
-                
-                if "pair_mask" in prediction:
-                    pair_mask = prediction["pair_mask"][model_idx] if prediction["pair_mask"].dim() > 2 else prediction["pair_mask"]
-                    path = (
-                        struct_dir
-                        / f"pair_mask_{record.id}_model_{idx_to_rank[model_idx]}.npz"
-                    )
-                    np.savez_compressed(path, pair_mask=pair_mask.cpu().numpy())
 
     def on_predict_epoch_end(
         self,
