@@ -344,6 +344,10 @@ class Boltz1(LightningModule):
                 "pdistogram": pdistogram,
                 "s": s,
                 "z": z,
+                "s_embeddings": s,
+                "z_embeddings": z,
+                "token_mask": mask,
+                "pair_mask": pair_mask,
             }
 
         # Compute structure module
@@ -1165,6 +1169,11 @@ class Boltz1(LightningModule):
             pred_dict["coords"] = out["sample_atom_coords"]
             pred_dict["s"] = out["s"]
             pred_dict["z"] = out["z"]
+            if self.predict_args.get("write_embeddings", False):
+                pred_dict["s_embeddings"] = out["s_embeddings"]
+                pred_dict["z_embeddings"] = out["z_embeddings"]
+                pred_dict["token_mask"] = out["token_mask"]
+                pred_dict["pair_mask"] = out["pair_mask"]
             if self.predict_args.get("write_confidence_summary", True):
                 pred_dict["confidence_score"] = (
                     4 * out["complex_plddt"]
