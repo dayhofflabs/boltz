@@ -899,6 +899,12 @@ def cli() -> None:
     help="Whether to dump the pde into a npz file. Default is False.",
 )
 @click.option(
+    "--write_embeddings",
+    type=bool,
+    is_flag=True,
+    help="Whether to save the sequence and pairwise embeddings. Default is False.",
+)
+@click.option(
     "--output_format",
     type=click.Choice(["pdb", "mmcif"]),
     help="The output format to use for the predictions. Default is mmcif.",
@@ -1056,6 +1062,7 @@ def predict(  # noqa: C901, PLR0915, PLR0912
     step_scale: Optional[float] = None,
     write_full_pae: bool = False,
     write_full_pde: bool = False,
+    write_embeddings: bool = False,
     output_format: Literal["pdb", "mmcif"] = "mmcif",
     num_workers: int = 2,
     override: bool = False,
@@ -1304,6 +1311,7 @@ def predict(  # noqa: C901, PLR0915, PLR0912
             "write_confidence_summary": True,
             "write_full_pae": write_full_pae,
             "write_full_pde": write_full_pde,
+            "write_embeddings": write_embeddings,
         }
 
         steering_args = BoltzSteeringParams()
